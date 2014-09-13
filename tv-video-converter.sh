@@ -12,4 +12,4 @@ fi
 
 echo "Video filepath: "$1" Subtitle filepath: "$2" Converted video filepath: "$3
 
-gst-launch-1.0 filesrc location="$1" ! decodebin name=decoder ! queue ! videoconvert ! videoscale ! video/x-raw,width=1920,height=1080 ! subtitleoverlay font-desc="DejaVu Sans 25px" name=subtitle ! x264enc ! qtmux name=muxer ! filesink location="$3" decoder. ! audioconvert ! audioresample ! queue ! voaacenc ! audio/mpeg,mpegversion=4,channels=2,rate=44100 ! muxer. filesrc location="$2" ! queue ! subparse ! subtitle.subtitle_sink
+gst-launch-1.0 filesrc location="$1" ! decodebin name=decoder ! queue ! videoconvert ! videoscale ! video/x-raw,width=1920,height=1080 ! subtitleoverlay font-desc="DejaVu Sans 25px" name=subtitle ! x264enc ! qtmux name=muxer ! filesink location="$3" decoder. ! audioconvert ! audioresample ! queue ! voaacenc ! muxer. filesrc location="$2" ! queue ! subparse ! subtitle.subtitle_sink
