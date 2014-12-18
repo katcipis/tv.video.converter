@@ -47,8 +47,8 @@ def generateSinkVideo(sourceVideo, sinkDir):
     args = ["tv-video-converter"];
     sinkVideo = os.path.basename(sourceVideo["video"])[:-3] + "mp4";
     args.append(sourceVideo["video"]);
-    args.append(sourceVideo["subtitle"]);
     args.append(os.path.join(sinkDir, sinkVideo));
+    args.append(sourceVideo["subtitle"]);
     subprocess.call(args);
 
 
@@ -56,6 +56,7 @@ def printDescriptionOfVideos(sourceVideos):
     print("\n\nThe following videos have been detected: \n");
     for videoInfo in sourceVideos:
         print("\nVideo: {video}\nSubtitle: {subtitle}\n".format(**videoInfo));
+    print("Total of videos to be transcoded: " + str(len(sourceVideos)) + "\n")
 
 
 if len(sys.argv) < 3:
