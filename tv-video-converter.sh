@@ -16,7 +16,7 @@ if [ "$#" -eq 2 ]; then
 
     echo "Video filepath: "$input_path" Converted video filepath: "$output_path
 
-    gst-launch-1.0 filesrc location="$input_path" ! decodebin name=decoder ! queue ! videoconvert ! videoscale ! video/x-raw,width=1920,height=1080 ! x264enc ! qtmux name=muxer ! filesink location="$output_path" decoder. ! audioconvert ! audioresample ! queue ! voaacenc ! muxer.
+    gst-launch-1.0 filesrc location="$input_path" ! decodebin name=decoder ! queue ! videoconvert ! videoscale ! video/x-raw,width=1920,height=1080 ! x264enc ! qtmux name=muxer ! filesink location="$output_path" decoder. ! audioconvert ! audioresample ! queue ! avenc_aac ! muxer.
 
 fi
 
@@ -24,6 +24,6 @@ if [ "$#" -eq 3 ]; then
 
     echo "Video filepath: "$input_path" Converted video filepath: "$output_path" Subtitle path: "$subtitle_path
 
-    gst-launch-1.0 filesrc location="$input_path" ! decodebin name=decoder ! queue ! videoconvert ! videoscale ! video/x-raw,width=1920,height=1080 ! subtitleoverlay font-desc="DejaVu Sans 25px" name=subtitle ! x264enc ! qtmux name=muxer ! filesink location="$output_path" decoder. ! audioconvert ! audioresample ! queue ! voaacenc ! muxer. filesrc location="$subtitle_path" ! queue ! subparse ! subtitle.subtitle_sink
+    gst-launch-1.0 filesrc location="$input_path" ! decodebin name=decoder ! queue ! videoconvert ! videoscale ! video/x-raw,width=1920,height=1080 ! subtitleoverlay font-desc="DejaVu Sans 25px" name=subtitle ! x264enc ! qtmux name=muxer ! filesink location="$output_path" decoder. ! audioconvert ! audioresample ! queue ! avenc_aac ! muxer. filesrc location="$subtitle_path" ! queue ! subparse ! subtitle.subtitle_sink
 
 fi
