@@ -26,7 +26,7 @@ def getSourceVideos(sourceDir):
         if os.path.exists(expectedSubtitle):
             result.append({ "video" : video, "subtitle" : expectedSubtitle});
         else:
-            print("Ignoring file: [{0}] since it does not have a subtitle".format(video));
+        	result.append({ "video" : video });
 
     return result;
 
@@ -48,14 +48,20 @@ def generateSinkVideo(sourceVideo, sinkDir):
     sinkVideo = os.path.basename(sourceVideo["video"])[:-3] + "mp4";
     args.append(sourceVideo["video"]);
     args.append(os.path.join(sinkDir, sinkVideo));
-    args.append(sourceVideo["subtitle"]);
+    
+    if "subtitle" in sourceVideo:
+    	args.append(sourceVideo["subtitle"]);
+    	
     subprocess.call(args);
 
 
 def printDescriptionOfVideos(sourceVideos):
     print("\n\nThe following videos have been detected: \n");
     for videoInfo in sourceVideos:
-        print("\nVideo: {video}\nSubtitle: {subtitle}\n".format(**videoInfo));
+    	if "subtitle" in videoInfo:
+        	print("\nVideo: {video}\nSubtitle: {subtitle}\n".format(**videoInfo));
+        else:
+        	print("\nVideo: {video}".format(**videoInfo))
     print("Total of videos to be transcoded: " + str(len(sourceVideos)) + "\n")
 
 
