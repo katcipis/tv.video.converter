@@ -19,6 +19,7 @@ def getSourceVideos(sourceDir):
     videos.extend(getFilesWithSuffix(sourceDir, "mkv"));
     videos.extend(getFilesWithSuffix(sourceDir, "mp4"));
     videos.extend(getFilesWithSuffix(sourceDir, "avi"));
+    videos.extend(getFilesWithSuffix(sourceDir, "m4v"));
     result = [];
 
     for video in videos:
