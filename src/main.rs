@@ -4,6 +4,7 @@ use crossbeam_channel::Sender;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::ExitCode;
 use std::thread;
 use std::vec::Vec;
 
@@ -13,19 +14,33 @@ struct TranscodeJob {
     dest: PathBuf,
 }
 
-fn main() {
-    const NTHREADS: i32 = 4;
-
+fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
 
-    let pathbuf = match args.len() {
-        2 => PathBuf::from(&args[1]),
-        _ => env::current_dir().unwrap(),
+    let (srcdir, destdir) = match args.len() {
+        1 => {
+            let src = env::current_dir().unwrap();
+            let mut dest = src.clone();
+            dest.push("transcoded");
+            (src, dest)
+        }
+        3 => (PathBuf::from(&args[1]), PathBuf::from(&args[2])),
+        _ => {
+            println!("usage using current dir: {}", args[0]);
+            println!("usage explicit dirs: {} <src dir> <dest dir>", args[0]);
+            std::process::exit(1)
+        }
     };
 
-    println!("looking for videos at: {}", pathbuf.display());
+    println!(
+        "videos src: {} dest: {}",
+        srcdir.display(),
+        destdir.display()
+    );
 
     thread::scope(|s| {
+        const NTHREADS: i32 = 4;
+
         let (job_sender, job_recv) = bounded::<TranscodeJob>(0);
 
         for i in 0..NTHREADS {
@@ -33,10 +48,12 @@ fn main() {
             s.spawn(move || transcoder(i, job_recv));
         }
 
-        jobscheduler(pathbuf.as_path(), job_sender);
+        jobscheduler(srcdir.as_path(), job_sender);
     });
 
     println!("done");
+
+    ExitCode::SUCCESS
 }
 
 fn jobscheduler(path: &Path, job_sender: Sender<TranscodeJob>) {
