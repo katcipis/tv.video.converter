@@ -108,7 +108,7 @@ fn transcoder(id: i32, job_recv: Receiver<TranscodeJob>) {
         let pipeline = format!(
             r#"
                 gst-launch-1.0 filesrc location="{}" ! decodebin name=decoder ! \
-                queue ! videoconvert ! videoscale ! x264enc ! queue ! \
+                queue ! videoconvert ! videoscale ! videorate ! x264enc ! queue ! \
                 matroskamux name=muxer ! queue ! filesink location="{}" decoder. ! \
                 queue ! audioconvert ! audioresample ! vorbisenc ! queue ! muxer.
             "#,
