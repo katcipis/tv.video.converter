@@ -80,7 +80,7 @@ fn jobscheduler(srcdir: &Path, destdir: &Path, job_sender: Sender<TranscodeJob>)
 
     for src in srcs {
         // We already validated srcs, so they always have a filename
-        let dest_file = src.with_extension("webm");
+        let dest_file = src.with_extension("mkv");
         let mut dest = destdir.to_path_buf();
         dest.push(dest_file.file_name().unwrap());
 
@@ -108,8 +108,8 @@ fn transcoder(id: i32, job_recv: Receiver<TranscodeJob>) {
         let pipeline = format!(
             r#"
                 gst-launch-1.0 filesrc location="{}" ! decodebin name=decoder ! \
-                queue ! videoconvert ! videoscale ! vp9enc ! queue ! \
-                webmmux name=muxer ! queue ! filesink location="{}" decoder. ! \
+                queue ! videoconvert ! videoscale ! x264enc ! queue ! \
+                matroskamux name=muxer ! queue ! filesink location="{}" decoder. ! \
                 queue ! audioconvert ! audioresample ! vorbisenc ! queue ! muxer.
             "#,
             job.src.display(),
