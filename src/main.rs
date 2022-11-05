@@ -4,6 +4,7 @@ use crossbeam_channel::Sender;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::process::ExitCode;
 use std::thread;
 use std::vec::Vec;
@@ -29,7 +30,7 @@ fn main() -> Result<(), ExitCode> {
     }
 
     thread::scope(|s| {
-        const NTHREADS: i32 = 4;
+        const NTHREADS: i32 = 6;
 
         let (job_sender, job_recv) = bounded::<TranscodeJob>(0);
 
@@ -78,9 +79,10 @@ fn jobscheduler(srcdir: &Path, destdir: &Path, job_sender: Sender<TranscodeJob>)
     }
 
     for src in srcs {
-        let mut dest = destdir.to_path_buf();
         // We already validated srcs, so they always have a filename
-        dest.push(src.file_name().unwrap());
+        let dest_file = src.with_extension("webm");
+        let mut dest = destdir.to_path_buf();
+        dest.push(dest_file.file_name().unwrap());
 
         let job = TranscodeJob {
             src: src,
@@ -102,6 +104,36 @@ fn transcoder(id: i32, job_recv: Receiver<TranscodeJob>) {
             job.src.display(),
             job.dest.display()
         );
+
+        let pipeline = format!(
+            r#"
+                gst-launch-1.0 filesrc location="{}" ! decodebin name=decoder ! \
+                queue ! videoconvert ! videoscale ! vp9enc ! queue ! \
+                webmmux name=muxer ! queue ! filesink location="{}" decoder. ! \
+                queue ! audioconvert ! audioresample ! vorbisenc ! queue ! muxer.
+            "#,
+            job.src.display(),
+            job.dest.display(),
+        );
+
+        println!("running: {}", pipeline);
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c");
+        cmd.arg(pipeline);
+
+        match cmd.spawn() {
+            Ok(mut child) => match child.wait() {
+                Ok(res) => {
+                    println!("transcoder result: {}", res);
+                }
+                Err(err) => {
+                    println!("error running transcoder: {}", err);
+                }
+            },
+            Err(err) => {
+                println!("error starting transcoder: {}", err);
+            }
+        }
     }
 
     println!("finishing transcoder {}", id);
