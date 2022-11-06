@@ -105,21 +105,29 @@ fn transcoder(id: i32, job_recv: Receiver<TranscodeJob>) {
             job.dest.display()
         );
 
-        let pipeline = format!(
-            r#"
-                gst-launch-1.0 filesrc location="{}" ! decodebin name=decoder ! \
-                queue ! videoconvert ! videoscale ! videorate ! x264enc ! queue ! \
-                matroskamux name=muxer ! queue ! filesink location="{}" decoder. ! \
-                queue ! audioconvert ! audioresample ! vorbisenc ! queue ! muxer.
-            "#,
-            job.src.display(),
-            job.dest.display(),
-        );
+        // I usually go with Gstreamer, but it does not have a proper
+        // way to increase the framerate. So I used ffmpeg.
+        //let pipeline = format!(
+        //r#"
+        //gst-launch-1.0 filesrc location="{}" ! decodebin name=decoder ! \
+        //queue ! videoconvert ! videoscale ! videorate ! x264enc ! queue ! \
+        //matroskamux name=muxer ! queue ! filesink location="{}" decoder. ! \
+        //queue ! audioconvert ! audioresample ! vorbisenc ! queue ! muxer.
+        //"#,
+        //job.src.display(),
+        //job.dest.display(),
+        //);
 
-        println!("running: {}", pipeline);
-        let mut cmd = Command::new("sh");
-        cmd.arg("-c");
-        cmd.arg(pipeline);
+        let mut cmd = Command::new("ffmpeg");
+        cmd.arg("-i");
+        cmd.arg(job.src);
+        cmd.arg("-crf");
+        cmd.arg("10");
+        cmd.arg("-filter:v");
+        cmd.arg("tblend");
+        cmd.arg("-r");
+        cmd.arg("60");
+        cmd.arg(job.dest);
 
         match cmd.spawn() {
             Ok(mut child) => match child.wait() {
