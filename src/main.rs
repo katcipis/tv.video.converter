@@ -30,7 +30,7 @@ fn main() -> Result<(), ExitCode> {
     }
 
     thread::scope(|s| {
-        const NTHREADS: i32 = 6;
+        const NTHREADS: i32 = 4;
 
         let (job_sender, job_recv) = bounded::<TranscodeJob>(0);
 
